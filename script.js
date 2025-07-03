@@ -1,3 +1,106 @@
+// パスワード認証クラス
+class PasswordAuth {
+    constructor() {
+        this.correctPassword = 'card2025'; // パスワードを設定（実際の運用では環境変数等で管理）
+        this.sessionKey = 'rating_system_auth';
+        this.init();
+    }
+
+    init() {
+        // セッション確認
+        if (this.isAuthenticated()) {
+            this.showMainContent();
+        } else {
+            this.showPasswordModal();
+        }
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        // パスワード送信ボタン
+        document.getElementById('password-submit-btn').addEventListener('click', () => {
+            this.validatePassword();
+        });
+
+        // Enterキーでパスワード送信
+        document.getElementById('password-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.validatePassword();
+            }
+        });
+
+        // モーダル外クリックを無効化
+        document.getElementById('password-modal').addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+
+    validatePassword() {
+        const inputPassword = document.getElementById('password-input').value;
+        const errorElement = document.getElementById('password-error');
+
+        if (inputPassword === this.correctPassword) {
+            // 認証成功
+            this.setAuthenticated();
+            this.hidePasswordModal();
+            this.showMainContent();
+            this.initRatingSystem();
+        } else {
+            // 認証失敗
+            errorElement.style.display = 'block';
+            document.getElementById('password-input').value = '';
+            document.getElementById('password-input').focus();
+            
+            // エラーメッセージを一定時間後に非表示
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 3000);
+        }
+    }
+
+    isAuthenticated() {
+        const authTime = localStorage.getItem(this.sessionKey);
+        if (!authTime) return false;
+        
+        // 24時間でセッション期限切れ
+        const expiryTime = 24 * 60 * 60 * 1000; // 24時間
+        return (Date.now() - parseInt(authTime)) < expiryTime;
+    }
+
+    setAuthenticated() {
+        localStorage.setItem(this.sessionKey, Date.now().toString());
+    }
+
+    showPasswordModal() {
+        document.getElementById('password-modal').style.display = 'flex';
+        document.getElementById('main-container').style.display = 'none';
+        document.getElementById('password-input').focus();
+    }
+
+    hidePasswordModal() {
+        document.getElementById('password-modal').style.display = 'none';
+    }
+
+    showMainContent() {
+        document.getElementById('main-container').style.display = 'block';
+    }
+
+    initRatingSystem() {
+        // レーティングシステムを初期化
+        if (!window.ratingSystem) {
+            window.ratingSystem = new RatingSystem();
+            // グローバル変数も設定
+            ratingSystem = window.ratingSystem;
+        }
+    }
+
+    // ログアウト機能
+    logout() {
+        localStorage.removeItem(this.sessionKey);
+        location.reload();
+    }
+}
+
 // レーティングシステムクラス
 class RatingSystem {
     constructor() {
@@ -66,6 +169,13 @@ class RatingSystem {
         // 全履歴削除
         document.getElementById('clear-all-matches-btn').addEventListener('click', () => {
             this.clearAllMatches();
+        });
+
+        // ログアウト
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            if (window.passwordAuth) {
+                window.passwordAuth.logout();
+            }
         });
     }
 
@@ -1042,7 +1152,9 @@ class RatingSystem {
 }
 
 // アプリケーション起動
+let passwordAuth;
 let ratingSystem;
+
 document.addEventListener('DOMContentLoaded', () => {
-    ratingSystem = new RatingSystem();
+    passwordAuth = new PasswordAuth();
 });

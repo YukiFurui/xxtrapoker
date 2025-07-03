@@ -8,7 +8,27 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
+    <!-- パスワード認証モーダル -->
+    <div id="password-modal" class="password-modal">
+        <div class="password-modal-content">
+            <div class="password-header">
+                <h2>🔒 アクセス認証</h2>
+                <p>レーティングシステムにアクセスするにはパスワードが必要です</p>
+            </div>
+            <div class="password-form">
+                <input type="password" id="password-input" placeholder="パスワードを入力してください" autocomplete="off">
+                <button id="password-submit-btn">ログイン</button>
+            </div>
+            <div id="password-error" class="password-error" style="display: none;">
+                パスワードが間違っています。再度入力してください。
+            </div>
+            <div class="password-hint">
+                <small>※ パスワードを忘れた場合は管理者にお問い合わせください</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="main-container" style="display: none;">
         <header>
             <h1>🃏 カードゲーム レーティングシステム</h1>
             <nav>
@@ -112,6 +132,7 @@
                         <input type="file" id="import-file" accept=".json" style="display: none;">
                         <button id="import-btn">データインポート</button>
                         <button id="clear-data-btn" class="danger">全データクリア</button>
+                        <button id="logout-btn" class="logout-btn">🔓 ログアウト</button>
                     </div>
                 </div>
             </div>
